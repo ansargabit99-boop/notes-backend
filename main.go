@@ -26,8 +26,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /notes",getNotes)
 	mux.HandleFunc("POST /notes",addNotes)
-	mux.HandleFunc("DELETE /notes/:id",deleteNotes)
-	mux.HandleFunc("PATCH /notes/:id",changeNote)
+	mux.HandleFunc("DELETE /notes/{id}",deleteNotes)
+	mux.HandleFunc("PATCH /notes/{id}",changeNote)
 	log.Println("server running on localhost:3000")
 	handler := cors.New(cors.Options{
     AllowedOrigins: []string{"http://localhost:5173"},
@@ -40,6 +40,7 @@ http.ListenAndServe(":3000", handler)
 func getNotes(w http.ResponseWriter,r *http.Request) {
 	rows,err := pool.Query(r.Context(),"SELECT * FROM notes") // whar type of function is thsi 
 	if err!=nil {
+		log.Println(err)
 		http.Error(w,"something went wrong",http.StatusInternalServerError)
 		return
 	}
@@ -49,6 +50,7 @@ func getNotes(w http.ResponseWriter,r *http.Request) {
 		var n Note
 		err := rows.Scan(&n.ID,&n.Title,&n.Body)////what does scan mean here 
 		if err != nil {
+			log.Println(err)
 			http.Error(w,"failed to fetch",http.StatusInternalServerError)
 			return
 		}
@@ -92,8 +94,8 @@ func deleteNotes(w http.ResponseWriter,r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 type UpdateInput struct {
-	Title string `json:"title"`
-	Body string `jsoon:"title"`
+	Title *string `json:"title"`
+	Body *string `json:"body"`
 }
 func changeNote(w http.ResponseWriter,r *http.Request) {
 	var n Note
