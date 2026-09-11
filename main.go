@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/cors"
 )
 type Note struct {
 	ID    int    `json:"id"`
@@ -28,7 +29,13 @@ func main() {
 	mux.HandleFunc("DELETE /notes/:id",deleteNotes)
 	mux.HandleFunc("PATCH /notes/:id",changeNote)
 	log.Println("server running on localhost:3000")
-	http.ListenAndServe(":3000",mux)
+	handler := cors.New(cors.Options{
+    AllowedOrigins: []string{"http://localhost:5173"},
+    AllowedMethods: []string{"GET", "POST", "PATCH", "DELETE"},
+    AllowedHeaders: []string{"Content-Type"},
+}).Handler(mux)
+
+http.ListenAndServe(":3000", handler)
 }
 func getNotes(w http.ResponseWriter,r *http.Request) {
 	rows,err := pool.Query(r.Context(),"SELECT * FROM notes") // whar type of function is thsi 
